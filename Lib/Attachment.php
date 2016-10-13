@@ -102,7 +102,7 @@ class Attachment{
             if($err!==null){
                 continue;
             }
-            $link=$domain."/".$key;
+            $link=$domain."/".$ret['key'];
             //替换图片链接
             $content=str_replace($value,$link,$content);
         }
@@ -116,9 +116,9 @@ class Attachment{
         //加载七牛配置文件，并检查是否为空
         $qiniu=$this->_config->get("qiniu");
         foreach ($qiniu as $v){
-            if(empty($v))
+            if(empty($v)){
                 throw new \Exception("Error: 七牛配置文件错误，请检查config.php!");
-            return;
+            }
         }
 
         $auth=new Auth($qiniu['access_key'],$qiniu["secret_key"]);
