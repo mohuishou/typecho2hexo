@@ -12,9 +12,22 @@ use Qiniu\Storage\UploadManager;
 
 class Attachment{
 
-    protected $filename;
+    /**
+     * 加载config对象
+     * @var Config
+     */
     protected $_config;
+
+    /**
+     * 七牛SDK当中的上传类的对象
+     * @var
+     */
     protected $_uploadMgr;
+
+    /**
+     * 七牛的token
+     * @var string
+     */
     protected $_token;
 
     /**
@@ -26,20 +39,25 @@ class Attachment{
     }
 
     /**
-     * @param $filename
-     * @param $content
+     * 保存文件，主要方法
+     * @param string $filename 原博客文章标题
+     * @param string $content 原博客文章内容
      * @return mixed
      */
     public function save($filename,$content){
-        //匹配链接地址
+        //匹配链接地址，匹配两种格式
+        //格式一：![](http://)
         $pattern="/!\[.*\]\(([a-zA-z]+:\/\/[^\s]*\/([^\s]*\.[^\s]*)).*\)/";
         preg_match_all($pattern,$content,$res);
+        //格式二：[]: http://
         $pattern2="/\[\d\]:\s([a-zA-z]+:\/\/[^\s]*\/([^\s]*\.[^\s]*))/";
         preg_match_all($pattern2,$content,$res2);
+        //将匹配到的链接整合到数组
         $res_all[0]=array_merge($res[1],$res2[1]);
         $res_all[1]=array_merge($res[2],$res2[2]);
+        //没有附件或者是图片直接返回
         if(empty($res_all[0][0])) return $content;
-
+        //文件保存方式
         $type=$this->_config->get("attachment")["type"];
         if($type=="qiniu"){
             $this->initQiniu();
@@ -52,10 +70,11 @@ class Attachment{
     }
 
     /**
-     * @param $res
-     * @param $content
-     * @param $filename
-     * @return mixed
+     * 下载文件，保存到本地
+     * @param array $res 链接数组
+     * @param string $content 原博客文章内容
+     * @param string $filename 原博客文章标题
+     * @return string $content
      */
     protected function saveFile($res,$content,$filename){
         foreach ($res[0] as $key=> $value){
@@ -68,11 +87,12 @@ class Attachment{
     }
 
     /**
-     * @param $res
-     * @param $content
+     * 下载文件保存到七牛
+     * @param array $res 链接数组
+     * @param string $content 原博客文章内容
      * @return mixed
      */
-    public function saveQiniu($res,$content){
+    protected function saveQiniu($res,$content){
         $domain=$this->_config->get("qiniu")["domain"];
         foreach ($res[0] as $key=> $value){
             //下载图片
@@ -90,10 +110,17 @@ class Attachment{
     }
 
     /**
-     *
+     * 七牛初始化
      */
     protected function initQiniu(){
+        //加载七牛配置文件，并检查是否为空
         $qiniu=$this->_config->get("qiniu");
+        foreach ($qiniu as $v){
+            if(empty($v))
+                throw new \Exception("Error: 七牛配置文件错误，请检查config.php!");
+            return;
+        }
+
         $auth=new Auth($qiniu['access_key'],$qiniu["secret_key"]);
         $this->_token=$auth->uploadToken($qiniu["bucket_name"]);
         // 初始化 UploadManager 对象并进行文件的上传
@@ -101,15 +128,16 @@ class Attachment{
     }
 
     /**
-     * @param $url
-     * @param $filename
-     * @param $dir
-     * @return string
+     * 下载文件
+     * @param string $url 下载链接
+     * @param string $filename 文件名
+     * @param string $dir 文件保存目录
+     * @return string $path 文件保存的路径
      */
     protected function download($url,$filename,$dir){
         $path=$dir."/".$filename;
         $ch=curl_init();
-        $timeout=60;
+        $timeout=60; //文件最长下载时间
         curl_setopt($ch,CURLOPT_URL,$url);
         curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
