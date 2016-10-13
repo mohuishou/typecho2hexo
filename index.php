@@ -1,4 +1,8 @@
 <?php
 require_once './vendor/autoload.php';
-new \Mohuishou\Lib\Convert();
+try {
+    new \Mohuishou\Lib\Convert();
+}catch (Exception $e){
+    echo "\r\n error： ".$e->getMessage();
+}
 
