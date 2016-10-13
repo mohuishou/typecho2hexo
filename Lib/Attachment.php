@@ -109,7 +109,7 @@ class Attachment{
     protected function download($url,$filename,$dir){
         $path=$dir."/".$filename;
         $ch=curl_init();
-        $timeout=3;
+        $timeout=60;
         curl_setopt($ch,CURLOPT_URL,$url);
         curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);

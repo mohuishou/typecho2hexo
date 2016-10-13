@@ -13,6 +13,9 @@ class Convert{
         $this->getData();
     }
 
+    /**
+     *
+     */
     protected function getData(){
         $db=$this->_config->get("db");
         try {
@@ -45,7 +48,6 @@ TEXT;
 
             if($is_download){
                 $content=$this->attachment($filename,$content);
-//                return;
             }
 
             $temp=<<<EOT
@@ -59,9 +61,6 @@ date: {$created_time}
 EOT;
 
             file_put_contents(__DIR__."/../FILE/".$filename.".md",$temp);
-//            print_r($row);
-            return;
-
         }
     }
 
