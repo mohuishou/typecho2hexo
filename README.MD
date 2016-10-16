@@ -10,3 +10,6 @@ composer install
 ## 运行
 1. 将config.example.php改为config.php
 2. php index.php
+
+## 感谢
+参考了[typecho2Hexo](https://github.com/NewbMiao/typecho2Hexo)项目的代码
